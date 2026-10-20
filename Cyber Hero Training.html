@@ -1,0 +1,358 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cyber Hero Training</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one scrolling "training manual" of comic panels, one per level, with a sticky score bar. */
+:root {
+  --bg: #EEF2F9; --panel: #FFFFFF; --ink: #121A33; --muted: #59627A; --line: #121A33;
+  --hero: #1F5FAD; --hero-soft: #DCE8F7; --pow: #FFC93C; --pow-ink: #121A33;
+  --good: #187A4E; --good-soft: #DDF3E8; --bad: #C2352F; --bad-soft: #FBE3E1; --mid: #9A5B00; --mid-soft: #FFF0D1;
+  --field: #F4F6FB; --bar-bg: #121A33; --bar-fg: #EEF2F9;
+  --display: "Bangers", "Impact", "Arial Narrow", sans-serif;
+  --body: "Lexend", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0D1326; --panel: #172040; --ink: #E7ECF8; --muted: #A3ADC6; --line: #8FA3D6;
+  --hero: #7FB0FF; --hero-soft: #22325E; --pow: #FFC93C; --pow-ink: #121A33;
+  --good: #5FD39C; --good-soft: #143A2B; --bad: #FF8A84; --bad-soft: #43201F; --mid: #FFC66B; --mid-soft: #3D2E12;
+  --field: #111A35; --bar-bg: #050A1A; --bar-fg: #E7ECF8; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0D1326; --panel: #172040; --ink: #E7ECF8; --muted: #A3ADC6; --line: #8FA3D6;
+  --hero: #7FB0FF; --hero-soft: #22325E; --pow: #FFC93C; --pow-ink: #121A33;
+  --good: #5FD39C; --good-soft: #143A2B; --bad: #FF8A84; --bad-soft: #43201F; --mid: #FFC66B; --mid-soft: #3D2E12;
+  --field: #111A35; --bar-bg: #050A1A; --bar-fg: #E7ECF8; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bar-bg) }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px }
+
+header.top { padding-block: 32px 8px }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(44px, 9vw, 76px); line-height: .95; letter-spacing: .02em; margin: 6px 0 10px; text-wrap: balance }
+h1 span { color: var(--hero) }
+.lede { max-width: 62ch; margin: 0 0 18px; color: var(--muted) }
+.who { display: flex; flex-wrap: wrap; gap: 12px }
+.who label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; flex: 1 1 200px; min-width: 0 }
+input[type=text], textarea { font: inherit; color: var(--ink); background: var(--field); border: 2px solid var(--line); border-radius: 6px; padding: 10px 12px; width: 100% }
+textarea { min-height: 96px; resize: vertical }
+input:focus-visible, textarea:focus-visible, button:focus-visible, select:focus-visible { outline: 3px solid var(--pow); outline-offset: 2px }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bar-bg); color: var(--bar-fg); margin: 20px 0 24px; border-radius: 0 0 8px 8px; }
+.bar-in { display: flex; align-items: center; gap: 16px; padding: 10px 14px; flex-wrap: wrap }
+.bar b { font-family: var(--display); font-weight: 400; font-size: 26px; letter-spacing: .03em; color: var(--pow); line-height: 1 }
+.meter { flex: 1 1 160px; height: 10px; background: color-mix(in srgb, var(--bar-fg) 25%, transparent); border-radius: 5px; overflow: hidden; min-width: 120px }
+.meter i { display: block; height: 100%; width: 0; background: var(--pow); transition: width .3s }
+.bar small { font-size: 13px; opacity: .85 }
+
+.level { background: var(--panel); border: 3px solid var(--line); border-radius: 4px; box-shadow: 6px 6px 0 var(--line); padding: 22px 22px 24px; margin-bottom: 34px; position: relative }
+.lv-head { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 6px }
+.lv-num { flex: none; font-family: var(--display); font-size: 30px; line-height: 1; background: var(--pow); color: var(--pow-ink); border: 3px solid var(--line); padding: 8px 10px 6px; transform: rotate(-4deg); border-radius: 3px }
+.lv-head h2 { margin: 0; font-size: 22px; line-height: 1.2; text-wrap: balance }
+.std { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--hero); background: var(--hero-soft); padding: 2px 8px; border-radius: 99px }
+.how { color: var(--muted); margin: 8px 0 16px; max-width: 64ch }
+
+.items { display: grid; gap: 14px }
+.item { border: 2px solid color-mix(in srgb, var(--line) 30%, transparent); border-radius: 6px; padding: 14px; min-width: 0 }
+.item p.q { margin: 0 0 10px; font-weight: 500 }
+.choices { display: flex; flex-wrap: wrap; gap: 8px }
+button { font: 600 15px/1.2 var(--body); cursor: pointer; border: 2px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; padding: 9px 14px; }
+button:hover:not(:disabled) { background: var(--hero-soft) }
+button:disabled { cursor: default }
+button.picked.right { background: var(--good-soft); border-color: var(--good); color: var(--good) }
+button.picked.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad) }
+button.answer { border-style: dashed; border-color: var(--good) }
+button.primary { background: var(--hero); color: var(--panel); border-color: var(--hero) }
+:root:not([data-theme="light"]) button.primary { color: var(--bg) }
+button.primary:hover:not(:disabled) { background: var(--hero); filter: brightness(1.08) }
+.fb { margin-top: 10px; font-size: 14.5px; padding: 8px 12px; border-radius: 6px }
+.fb.right { background: var(--good-soft); color: var(--ink) }
+.fb.wrong { background: var(--bad-soft); color: var(--ink) }
+.fb.info { background: var(--mid-soft); color: var(--ink) }
+.fb strong { margin-right: 4px }
+.fb.right strong { color: var(--good) } .fb.wrong strong { color: var(--bad) } .fb.info strong { color: var(--mid) }
+
+select { font: inherit; color: var(--ink); background: var(--field); border: 2px solid var(--line); border-radius: 6px; padding: 8px 10px; max-width: 100% }
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 16px }
+.glossary div { background: var(--hero-soft); border-radius: 6px; padding: 8px 10px; font-size: 13.5px; min-width: 0 }
+.glossary b { display: block; color: var(--hero) }
+
+.order-pool, .order-picked { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px }
+.order-picked { border: 2px dashed color-mix(in srgb, var(--line) 45%, transparent); border-radius: 6px; padding: 8px; margin: 10px 0 }
+.order-picked .tile { background: var(--hero-soft) }
+.tile .n { display: inline-block; font-family: var(--display); font-size: 18px; margin-right: 6px; color: var(--hero) }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+
+.post { background: var(--field); border: 2px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 12px 14px; max-width: 460px; font-weight: 500; margin-bottom: 14px }
+.post .who-post { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; margin-bottom: 2px }
+.think { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px }
+.think label { display: flex; align-items: center; gap: 8px; border: 2px solid var(--line); border-radius: 6px; padding: 8px 12px; cursor: pointer; font-weight: 600 }
+.think input { width: 18px; height: 18px; accent-color: var(--hero) }
+
+.story { border: 2px solid var(--line); border-radius: 6px; padding: 16px; background: var(--field) }
+.story .scene { margin: 0 0 12px }
+.story .chat { display: grid; gap: 6px; margin: 0 0 14px }
+.story .chat div { background: var(--panel); border: 1.5px solid color-mix(in srgb, var(--line) 40%, transparent); border-radius: 12px 12px 12px 3px; padding: 6px 10px; width: fit-content; max-width: 100%; font-size: 14.5px }
+.story .chat b { color: var(--hero) }
+.story .opts { display: grid; gap: 8px }
+.story .opts button { text-align: left; font-weight: 500 }
+.ending { border-left: 0; padding: 12px 14px; border-radius: 6px; margin-top: 4px }
+.stars { font-family: var(--display); font-size: 24px; letter-spacing: .05em }
+
+.tf { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: start }
+@media (max-width: 520px) { .tf { grid-template-columns: 1fr } }
+
+.results { background: var(--bar-bg); color: var(--bar-fg); border-color: var(--bar-bg); box-shadow: 6px 6px 0 var(--pow) }
+.results h2 { font-family: var(--display); font-weight: 400; font-size: 40px; letter-spacing: .03em; margin: 0 0 4px; color: var(--pow) }
+.results .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 14px 0 }
+.results .grid div { background: color-mix(in srgb, var(--bar-fg) 10%, transparent); border-radius: 6px; padding: 10px 12px; min-width: 0 }
+.results .grid span { display: block; font-size: 12.5px; opacity: .8 }
+.results .grid strong { font-size: 20px; font-variant-numeric: tabular-nums }
+.results pre { white-space: pre-wrap; word-break: break-word; background: color-mix(in srgb, var(--bar-fg) 8%, transparent); padding: 12px; border-radius: 6px; font: 13.5px/1.5 var(--body); max-height: 260px; overflow: auto; margin: 10px 0 }
+.results button { background: var(--pow); color: var(--pow-ink); border-color: var(--pow) }
+.results button.ghost { background: transparent; color: var(--bar-fg); border-color: color-mix(in srgb, var(--bar-fg) 50%, transparent) }
+.confirm { margin-top: 10px; font-size: 14px }
+.note { font-size: 13.5px; opacity: .85 }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Digital Literacy · Cyberbullying</div>
+    <h1>Cyber Hero <span>Training</span></h1>
+    <p class="lede">Eight levels. Spot it, name it, handle it, prevent it. Answers lock after your first try, so think before you tap. When you're done, copy your results at the bottom and turn them in.</p>
+    <div class="who">
+      <label for="nm">Your name<input type="text" id="nm" autocomplete="off" placeholder="First and last name"></label>
+      <label for="pd" style="flex:0 1 140px">Period<input type="text" id="pd" autocomplete="off" placeholder="e.g. 3"></label>
+    </div>
+  </header>
+
+  <div class="bar" aria-live="polite"><div class="bar-in">
+    <b id="scoreTxt">0 / 28</b>
+    <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+    <small id="doneTxt">0 of 8 levels done</small>
+  </div></div>
+
+  <main id="app"></main>
+</div>
+
+<script>
+(function () {
+  const KEY = "cyber-hero-training-v1";
+  const L1 = [
+    ["Your friend posts a group photo where you're mid-sneeze. They didn't notice before posting.", "Rude", "Thoughtless, not on purpose. Ask them to take it down and most friends will."],
+    ["After you lose a game, another player types \"you're terrible, quit\" one time.", "Mean", "On purpose, but once. Mean still matters, but it isn't bullying yet."],
+    ["Every day this week the same account comments \"nobody wants you here\" on Jada's posts.", "Bullying", "On purpose, repeated, aimed at one person. That's the bullying formula."],
+    ["You ask a question in a chat and someone just replies \"k\" and ignores you.", "Rude", "Annoying and thoughtless, but not an attack."],
+    ["Ethan makes a new group chat every week and tells everyone not to add Leo.", "Bullying", "Leaving someone out on purpose, over and over. Exclusion is a form of cyberbullying."],
+    ["Mia shares a screenshot of Ava's drawing in one chat with \"lol look at this.\"", "Mean", "On purpose and hurtful. If Mia keeps doing it, it becomes bullying."],
+  ];
+  const TYPES = [["Flaming", "An online fight full of insults that keeps getting hotter"], ["Harassment", "Sending hurtful messages over and over"], ["Exclusion", "Leaving someone out on purpose"], ["Outing", "Sharing someone's private info or messages"], ["Impersonation", "Pretending to be someone else online"]];
+  const L2 = [
+    ["Two players in a game chat start trading insults in all caps until it turns into a huge fight.", "Flaming"],
+    ["Someone posts Jordan's private message about who he has a crush on.", "Outing"],
+    ["A new account uses Kayla's photo and name and posts weird things as if it's her.", "Impersonation"],
+    ["A group plans every hangout in a chat they made just to keep Sam out.", "Exclusion"],
+    ["Someone sends Priya 20 nasty DMs a day, even after she asked them to stop.", "Harassment"],
+  ];
+  const MOVES = ["Don't feed it", "Save it", "Block + report it", "Tell someone"];
+  const MOVE_TIP = { "Don't feed it": "don't reply", "Save it": "screenshot it", "Block + report it": "block and hit report", "Tell someone": "a trusted adult" };
+  const WHY = [["Blocking can hide the messages, and the screenshot is your proof", true], ["Screenshots make the bully stop", false], ["You need the screenshot to post it back at them", false]];
+  const THINK = [["T", "True"], ["H", "Helpful"], ["I", "Inspiring"], ["N", "Necessary"], ["K", "Kind"]];
+  const L5 = [
+    ["A tutorial video on how to draw manga eyes", "OK", "Safe, useful, made for anyone."],
+    ["A video a classmate says is \"really violent, don't tell the teacher\"", "Not OK", "Violent content, and \"don't tell\" is a red flag. Close it, don't share it."],
+    ["A meme making fun of a kid at your school by name", "Not OK", "It targets a real person. Don't share it, and report it."],
+    ["A news article about a hurricane for your science project", "OK", "Real news for school is appropriate, even when the topic is serious."],
+    ["A site asking for your home address so you can win free game skins", "Not OK", "Free stuff for personal info is a classic scam. Close it."],
+    ["A funny pet video your cousin sent", "OK", "Harmless and kind."],
+    ["A game rated M (Mature 17+) that a friend says you have to play", "Not OK", "Ratings exist for a reason. It isn't meant for your age."],
+    ["A comment thread where people respectfully argue about the best pizza topping", "OK", "Disagreeing respectfully is totally fine online."],
+  ];
+  const L7 = [
+    ["Cyberbullying that happens at home, on your own phone, can never be handled by your school.", false, "False. Under Massachusetts law, schools can act when off-campus cyberbullying makes school a hostile place for the target."],
+    ["In Massachusetts, school staff have to report bullying they see or hear about.", true, "True. Staff must report it to the principal or the person they choose."],
+    ["Some online threats and harassment are crimes, not just school rule problems.", true, "True. Threats and repeated harassment can involve the police, even for kids."],
+    ["If you only shared a mean post but didn't write it, you can't get in trouble.", false, "False. Sharing it spreads the harm. Schools treat forwarding as taking part."],
+    ["If someone deletes a mean post, there's no evidence it happened.", false, "False. Screenshots, shares and app records can keep it around."],
+    ["Breaking the school's Acceptable Use Policy can cost you access to school accounts and devices.", true, "True. The AUP is the deal that comes with your account."],
+  ];
+  // Branching story: nodes
+  const STORY = {
+    start: { scene: "Group chat: Lunch Table (9 people)", chat: [["Dev", "lmaooo look at Owen 🐷 (edited photo of Owen with a pig nose)"], ["5 people", "reacted 😂"]], q: "What do you do?",
+      opts: [["React 😂 so you don't look weird", "laugh"], ["Say nothing and keep scrolling", "scroll"], ["Post: \"Not funny. Take it down.\"", "speak"], ["Message Owen privately", "dm"]] },
+    laugh: { end: 0, title: "You joined the Pile-On", text: "Now it's 6 laughing reactions. Owen sees your name on the list. To him, you're part of it. Try again and pick a different move." },
+    scroll: { scene: "An hour later, Owen messages you directly.", chat: [["Owen", "did u see what dev posted"]], q: "What now?",
+      opts: [["Ignore it. You don't want to get involved.", "ignore"], ["\"Yeah I saw. That wasn't OK. You good?\"", "lateSupport"]] },
+    ignore: { end: 0, title: "Bystander ending", text: "Owen saw that you saw it and said nothing. Nothing changed, and the post is still up. Doing nothing feels neutral, but to the target it looks like agreement." },
+    lateSupport: { end: 2, title: "Late upstander", text: "Good recovery. Owen knows someone is on his side. Next level: offer to screenshot it with him and tell an adult, so the post actually comes down." },
+    speak: { scene: "Dev replies in the chat.", chat: [["Dev", "relax it's a joke 🙄"], ["2 people", "reacted 😂 to Dev"]], q: "Your move:",
+      opts: [["Roast Dev back so he knows how it feels", "roast"], ["Screenshot it, message Owen \"You good?\", and tell a teacher", "best"]] },
+    roast: { end: 1, title: "Flame war", text: "Now the chat is about you and Dev fighting, and Owen's photo is still up. Fighting fire with fire made you the Flame Thrower. Saying \"not funny\" was right, but the next move should have been support and reporting." },
+    best: { end: 3, title: "Cyber Hero ending", text: "You spoke up once, didn't take the bait, backed up Owen, saved proof and got an adult involved. The post comes down the next day. This is the full upstander combo." },
+    dm: { scene: "You message Owen: \"That wasn't OK. You good?\"", chat: [["Owen", "not really. pls don't tell anyone"]], q: "What do you do?",
+      opts: [["Keep it between you two like he asked", "secret"], ["\"I won't make it a big deal, but let's screenshot it and tell Ms. R together.\"", "best2"]] },
+    secret: { end: 2, title: "Good friend, unfinished job", text: "Owen feels less alone, and that matters. But the post is still up and Dev might do it again. Telling an adult with Owen, not behind his back, is how it actually stops." },
+    best2: { end: 3, title: "Cyber Hero ending", text: "You backed up Owen privately, saved proof, and helped him tell an adult on his terms. The post comes down. Quiet heroes count." },
+  };
+
+  const MAX = { l1: 6, l2: 5, l3: 2, l4: 1, l5: 8, l7: 6 };
+  let S = { l1: {}, l2: {}, l3: { order: [], why: null }, l4: { checks: [], checked: false, rewrite: "", compared: false }, l5: {}, l6: { path: ["start"], best: null }, l7: {}, l8: { a: "", b: "" }, name: "", period: "" };
+  try { const saved = JSON.parse(localStorage.getItem(KEY) || "null"); if (saved) S = Object.assign(S, saved); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  const $ = (sel, el = document) => el.querySelector(sel);
+  const h = (tag, attrs = {}, ...kids) => { const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) { if (k === "class") el.className = v; else if (k.startsWith("on")) el.addEventListener(k.slice(2), v); else if (v !== false && v != null) el.setAttribute(k, v === true ? "" : v); }
+    for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(c)); return el; };
+  const fb = (ok, msg, kind) => h("div", { class: "fb " + (kind || (ok ? "right" : "wrong")) }, h("strong", {}, kind === "info" ? "Heads up." : ok ? "Correct." : "Not quite."), msg);
+  const level = (n, title, std, how, body) => h("section", { class: "level", id: "level-" + n }, h("div", { class: "lv-head" }, h("div", { class: "lv-num", "aria-hidden": "true" }, "L" + n),
+    h("div", {}, h("h2", {}, `Level ${n}: ${title}`), h("span", { class: "std" }, std))), h("p", { class: "how" }, how), body);
+
+  function score() {
+    const s = { l1: 0, l2: 0, l3: 0, l4: 0, l5: 0, l7: 0 };
+    L1.forEach((q, i) => { if (S.l1[i] === q[1]) s.l1++; });
+    L2.forEach((q, i) => { if (S.l2[i] === q[1]) s.l2++; });
+    if (S.l3.order.length === 4 && S.l3.order.every((m, i) => m === MOVES[i])) s.l3++;
+    if (S.l3.why != null && WHY[S.l3.why][1]) s.l3++;
+    if (S.l4.checked && ["H", "I", "N", "K"].every((x) => S.l4.checks.includes(x))) s.l4 = 1;
+    L5.forEach((q, i) => { if (S.l5[i] === q[1]) s.l5++; });
+    L7.forEach((q, i) => { if (S.l7[i] === q[1]) s.l7++; });
+    return s;
+  }
+  function done() {
+    return [Object.keys(S.l1).length === L1.length, Object.keys(S.l2).length === L2.length, S.l3.order.length === 4 && S.l3.why != null,
+      S.l4.checked && S.l4.compared, Object.keys(S.l5).length === L5.length, S.l6.best != null, Object.keys(S.l7).length === L7.length,
+      S.l8.a.trim().length > 10 && S.l8.b.trim().length > 10];
+  }
+  function updateBar() {
+    const s = score(), total = Object.values(s).reduce((a, b) => a + b, 0), max = Object.values(MAX).reduce((a, b) => a + b, 0);
+    const d = done().filter(Boolean).length;
+    $("#scoreTxt").textContent = `${total} / ${max}`;
+    $("#meter").style.width = (d / 8 * 100) + "%";
+    $("#doneTxt").textContent = `${d} of 8 levels done`;
+    const r = $("#results"); if (r) r.replaceWith(results());
+  }
+  const rerender = (id, fn) => { const old = document.getElementById(id); old.replaceWith(fn()); save(); updateBar(); };
+
+  // Single-choice item helper
+  function choiceItem(store, i, q, options, correct, explain, id) {
+    const picked = store[i];
+    return h("div", { class: "item" }, h("p", { class: "q" }, q), h("div", { class: "choices" }, options.map((o) => h("button", {
+      type: "button", disabled: picked != null, class: (picked === o ? "picked " + (o === correct ? "right" : "wrong") : (picked != null && o === correct ? "answer" : "")),
+      onclick: () => { store[i] = o; rerender(id, builders[id]); } }, o))), picked != null ? fb(picked === correct, explain) : null);
+  }
+
+  const builders = {
+    "level-1": () => level(1, "Rude, Mean or Bullying?", "6-8.CAS.a.2", "Rude is an accident. Mean is on purpose, once. Bullying is on purpose, repeated, and hard to make stop. Sort each one.",
+      h("div", { class: "items" }, L1.map((q, i) => choiceItem(S.l1, i, q[0], ["Rude", "Mean", "Bullying"], q[1], q[2], "level-1")))),
+
+    "level-2": () => level(2, "Name the Type", "6-8.CAS.a.2", "Cyberbullying comes in different forms. Pick the type that matches each situation.",
+      h("div", {}, h("div", { class: "glossary" }, TYPES.map((t) => h("div", {}, h("b", {}, t[0]), t[1]))),
+        h("div", { class: "items" }, L2.map((q, i) => { const p = S.l2[i];
+          return h("div", { class: "item" }, h("p", { class: "q" }, q[0]),
+            h("div", { class: "row" }, h("label", { for: "l2-" + i, class: "note" }, "Type:"),
+              h("select", { id: "l2-" + i, disabled: p != null, onchange: (e) => { if (e.target.value) { S.l2[i] = e.target.value; rerender("level-2", builders["level-2"]); } } },
+                h("option", { value: "" }, "Choose..."), TYPES.map((t) => h("option", { value: t[0], selected: p === t[0] }, t[0])))),
+            p != null ? fb(p === q[1], p === q[1] ? "" : `This one is ${q[1]}.`) : null); })))),
+
+    "level-3": () => { const o = S.l3.order, full = o.length === 4, right = full && o.every((m, i) => m === MOVES[i]);
+      const pool = ["Tell someone", "Save it", "Don't feed it", "Block + report it"].filter((m) => !o.includes(m));
+      return level(3, "Handle It: The 4 Moves", "6-8.CAS.a.2", "Someone is cyberbullying YOU. Tap the moves in the order you should do them.",
+        h("div", {},
+          h("div", { class: "order-pool" }, pool.map((m) => h("button", { type: "button", class: "tile", disabled: full, onclick: () => { o.push(m); rerender("level-3", builders["level-3"]); } }, m))),
+          h("div", { class: "order-picked", "aria-label": "Your order" }, o.length ? o.map((m, i) => h("button", { type: "button", class: "tile" + (full ? (m === MOVES[i] ? " picked right" : " picked wrong") : ""), disabled: true }, h("span", { class: "n" }, i + 1), m)) : h("span", { class: "note" }, "Your order shows up here.")),
+          !full && o.length ? h("button", { type: "button", onclick: () => { S.l3.order = []; rerender("level-3", builders["level-3"]); } }, "Undo all") : null,
+          full ? fb(right, right ? "Don't feed it, save it, block and report it, tell someone." : "The order is: " + MOVES.map((m, i) => `${i + 1}. ${m} (${MOVE_TIP[m]})`).join(", ") + ".") : null,
+          full ? h("div", { class: "item", style: "margin-top:14px" }, h("p", { class: "q" }, "Why should you screenshot BEFORE you block?"),
+            h("div", { class: "choices" }, WHY.map((w, i) => h("button", { type: "button", disabled: S.l3.why != null,
+              class: S.l3.why === i ? "picked " + (w[1] ? "right" : "wrong") : (S.l3.why != null && w[1] ? "answer" : ""),
+              onclick: () => { S.l3.why = i; rerender("level-3", builders["level-3"]); } }, w[0]))),
+            S.l3.why != null ? fb(WHY[S.l3.why][1], "Once you block, it can be harder to get the messages back. Proof helps adults act.") : null) : null)); },
+
+    "level-4": () => { const L = S.l4;
+      return level(4, "Prevent It: THINK Before You Post", "6-8.CAS.a.2", "Prevention starts with you. Check every THINK test this post FAILS. Then rewrite it.",
+        h("div", {},
+          h("div", { class: "post" }, h("span", { class: "who-post" }, "you're about to comment on a classmate's art post"), "ur drawing is so bad lol why do u even try 💀"),
+          h("div", { class: "think" }, THINK.map(([k, word]) => h("label", { for: "th-" + k }, h("input", { type: "checkbox", id: "th-" + k, checked: L.checks.includes(k), disabled: L.checked,
+            onchange: (e) => { L.checks = e.target.checked ? [...L.checks, k] : L.checks.filter((x) => x !== k); save(); } }), `${k}: ${word}?`))),
+          !L.checked ? h("button", { type: "button", class: "primary", onclick: () => { L.checked = true; rerender("level-4", builders["level-4"]); } }, "Check my answer")
+            : fb(["H", "I", "N", "K"].every((x) => L.checks.includes(x)), "It fails Helpful, Inspiring, Necessary and Kind. True is debatable, since it's an opinion, so either answer is fine there."),
+          L.checked ? h("div", { style: "margin-top:16px" },
+            h("label", { for: "rw", class: "q", style: "display:block;font-weight:600;margin-bottom:6px" }, "Rewrite it so it passes THINK. Or explain why you'd post nothing at all."),
+            h("textarea", { id: "rw", oninput: (e) => { L.rewrite = e.target.value; save(); updateBar(); } }, L.rewrite),
+            h("div", { class: "row", style: "margin-top:8px" }, h("button", { type: "button", class: "primary", onclick: () => {
+              if ((L.rewrite || "").trim().length < 10) { const n = $("#rw-msg"); n.textContent = "Write at least one full sentence first."; return; }
+              L.compared = true; rerender("level-4", builders["level-4"]); } }, "Compare with an example"), h("span", { id: "rw-msg", class: "note", "aria-live": "polite" })),
+            L.compared ? fb(true, "One example: \"Cool that you're drawing! The shading on the eyes is really good.\" Also a great answer: scrolling past without commenting at all.", "info") : null) : null)); },
+
+    "level-5": () => level(5, "Appropriate or Not?", "6-8.CAS.a.5", "Not everything online is meant for you. Decide fast: is it OK, or not OK?",
+      h("div", { class: "items" }, L5.map((q, i) => choiceItem(S.l5, i, q[0], ["OK", "Not OK"], q[1], q[2], "level-5")))),
+
+    "level-6": () => { const path = S.l6.path, cur = STORY[path[path.length - 1]];
+      const node = cur.end != null
+        ? h("div", {}, h("div", { class: "ending fb " + (cur.end === 3 ? "right" : cur.end === 0 ? "wrong" : "info") },
+            h("div", { class: "stars", "aria-label": cur.end + " of 3 stars" }, "★".repeat(cur.end) + "☆".repeat(3 - cur.end)), h("strong", {}, cur.title + "."), " " + cur.text),
+          h("div", { class: "row", style: "margin-top:12px" }, h("button", { type: "button", class: "primary", onclick: () => { S.l6.path = ["start"]; rerender("level-6", builders["level-6"]); } }, cur.end === 3 ? "Play a different path" : "Try again")))
+        : h("div", {}, h("p", { class: "scene note" }, h("b", {}, cur.scene)),
+            h("div", { class: "chat" }, cur.chat.map((c) => h("div", {}, h("b", {}, c[0] + ": "), c[1]))),
+            h("p", { class: "q", style: "font-weight:600" }, cur.q),
+            h("div", { class: "opts" }, cur.opts.map(([label, next]) => h("button", { type: "button", onclick: () => { path.push(next); const n = STORY[next];
+              if (n.end != null) S.l6.best = Math.max(S.l6.best ?? 0, n.end); rerender("level-6", builders["level-6"]); } }, label))));
+      return level(6, "Choose Your Path", "6-8.CAS.a.2", "You're in the group chat when this happens. Your choices change the ending. Replay as many times as you want. Your best ending is saved.",
+        h("div", {}, h("div", { class: "story" }, node), S.l6.best != null ? h("p", { class: "note", style: "margin:10px 0 0" }, `Best ending so far: ${"★".repeat(S.l6.best)}${"☆".repeat(3 - S.l6.best)}`) : null)); },
+
+    "level-7": () => level(7, "Know the Consequences", "6-8.CAS.b.4", "Cyberbullying can have real consequences at school and beyond. True or false?",
+      h("div", { class: "items" }, L7.map((q, i) => { const p = S.l7[i];
+        return h("div", { class: "item" }, h("div", { class: "tf" }, h("p", { class: "q", style: "margin:0" }, q[0]),
+          h("div", { class: "choices" }, [["True", true], ["False", false]].map(([lab, val]) => h("button", { type: "button", disabled: p != null,
+            class: p === val ? "picked " + (val === q[1] ? "right" : "wrong") : (p != null && val === q[1] ? "answer" : ""),
+            onclick: () => { S.l7[i] = val; rerender("level-7", builders["level-7"]); } }, lab)))), p != null ? fb(p === q[1], q[2]) : null); }))),
+
+    "level-8": () => level(8, "Exit Ticket", "6-8.CAS.a.2", "In your own words. At least a full sentence each.",
+      h("div", { class: "items" },
+        h("div", { class: "item" }, h("label", { for: "ex-a", class: "q", style: "display:block;font-weight:500;margin-bottom:8px" }, "How can cyberbullying be PREVENTED? Give two ways."),
+          h("textarea", { id: "ex-a", oninput: (e) => { S.l8.a = e.target.value; save(); updateBar(); } }, S.l8.a)),
+        h("div", { class: "item" }, h("label", { for: "ex-b", class: "q", style: "display:block;font-weight:500;margin-bottom:8px" }, "If you were being cyberbullied, what would you do first, and why?"),
+          h("textarea", { id: "ex-b", oninput: (e) => { S.l8.b = e.target.value; save(); updateBar(); } }, S.l8.b)))),
+  };
+
+  function results() {
+    const s = score(), total = Object.values(s).reduce((a, b) => a + b, 0), max = Object.values(MAX).reduce((a, b) => a + b, 0);
+    const d = done(), allDone = d.every(Boolean);
+    const stars = S.l6.best != null ? "★".repeat(S.l6.best) + "☆".repeat(3 - S.l6.best) : "not played";
+    const text = [`CYBER HERO TRAINING RESULTS`, `Name: ${S.name || "(no name)"}   Period: ${S.period || "-"}`, `Score: ${total} / ${max}`,
+      `L1 Rude/Mean/Bullying: ${s.l1}/6 · L2 Types: ${s.l2}/5 · L3 4 Moves: ${s.l3}/2 · L4 THINK: ${s.l4}/1 · L5 Appropriate: ${s.l5}/8 · L7 Consequences: ${s.l7}/6`,
+      `L6 Best story ending: ${stars}`, ``, `THINK rewrite: ${S.l4.rewrite || "(blank)"}`, ``, `Prevent it: ${S.l8.a || "(blank)"}`, ``, `What I'd do first: ${S.l8.b || "(blank)"}`].join("\n");
+    let confirming = false;
+    const box = h("section", { class: "level results", id: "results" },
+      h("h2", {}, allDone ? "Training complete" : "Your results"),
+      h("p", { class: "note", style: "margin:0" }, allDone ? "Copy your results and paste them into Google Classroom, or show your teacher this screen." : `Finish all 8 levels first. Still open: ${d.map((x, i) => x ? null : "L" + (i + 1)).filter(Boolean).join(", ")}.`),
+      h("div", { class: "grid" }, h("div", {}, h("span", {}, "Name"), h("strong", {}, S.name || "—")), h("div", {}, h("span", {}, "Score"), h("strong", {}, `${total} / ${max}`)),
+        h("div", {}, h("span", {}, "Best ending"), h("strong", {}, stars)), h("div", {}, h("span", {}, "Levels done"), h("strong", {}, `${d.filter(Boolean).length} / 8`))),
+      h("pre", { id: "resText", tabindex: "0" }, text),
+      h("div", { class: "row" },
+        h("button", { type: "button", onclick: (e) => { const btn = e.currentTarget; const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy my results", 1800); };
+          const sel = () => { const r = document.createRange(); r.selectNodeContents($("#resText")); const w = getSelection(); w.removeAllRanges(); w.addRange(r); btn.textContent = "Selected. Press Ctrl+C"; };
+          try { navigator.clipboard.writeText(text).then(done, sel); } catch (err) { sel(); } } }, "Copy my results"),
+        h("button", { type: "button", class: "ghost", onclick: (e) => { const wrap = $("#confirmWrap"); wrap.hidden = false; } }, "Start over")),
+      h("div", { id: "confirmWrap", class: "confirm", hidden: true }, "This erases all your answers. ",
+        h("button", { type: "button", class: "ghost", onclick: () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); } }, "Yes, erase everything"), " ",
+        h("button", { type: "button", class: "ghost", onclick: () => { $("#confirmWrap").hidden = true; } }, "Keep my work")));
+    return box;
+  }
+
+  const app = $("#app");
+  Object.keys(builders).forEach((id) => app.append(builders[id]()));
+  app.append(results());
+  const nm = $("#nm"), pd = $("#pd"); nm.value = S.name || ""; pd.value = S.period || "";
+  nm.addEventListener("input", () => { S.name = nm.value; save(); updateBar(); });
+  pd.addEventListener("input", () => { S.period = pd.value; save(); updateBar(); });
+  updateBar();
+})();
+</script>
+
+</body></html>
